@@ -1,4 +1,5 @@
-require_relative "piece"
+require_relative "nullpiece"
+require_relative "kk_pieces"
 class Board
   attr_reader :rows
   
@@ -7,12 +8,17 @@ class Board
     (0..7).each do |row|
       (0..7).each do |col|
         pos = [row, col]
-        if [0, 1, 6, 7].include?(row)
-          new_piece = Piece.new("color", self, pos)
-          self[pos] = new_piece
+
+        case row
+        when 0, 1
+          new_piece = Piece.new(:white, self, pos)
+        when 6, 7
+          new_piece = Piece.new(:green, self, pos)
         else
-            new_piece = NullPiece.new ####ended here
+          new_piece = NullPiece.instance 
         end
+          
+        rows[row][col] = new_piece
       end
     end
     rows
@@ -20,7 +26,7 @@ class Board
 
   def initialize
     @rows = Board.create_board
-    @sentinel = NullPiece.new()
+    @sentinel = NullPiece.instance
   end
 
   def [](pos)
@@ -35,7 +41,7 @@ class Board
 
   def move_piece(color, start_pos, end_pos)
     # dup board first
-    raise "No piece at start position" if self[start_pos].nil? #(NullPiece)
+    raise "No piece at start position" if self[start_pos] == @sentinel
     raise "End position is not valid" unless self.valid_pos?(end_pos)
     self[end_pos] = self[start_pos]
     self[start_pos].pos = end_pos
